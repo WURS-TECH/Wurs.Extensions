@@ -6,7 +6,10 @@ using Wurs.Extensions.ServiceCollection.Atributtes;
 using Wurs.Extensions.ServiceCollection.Enums;
 
 namespace Wurs.Extensions.ServiceCollection;
-
+/// <summary>
+/// Registers as <see cref="IOptions{TOptions}"/> every <see cref="Type"/>
+/// marked with <see cref="RegisterOptionAttribute"/> in the provided array of <see cref="Assembly"/>
+/// </summary>
 public static class OptionsServiceCollectionExtension
 {
     private const string MICROSOFT = "microsoft";
@@ -14,6 +17,15 @@ public static class OptionsServiceCollectionExtension
     private static readonly MethodInfo _configureGenericMethod =
         GetBaseMethod(nameof(OptionsServiceCollectionExtension.ConfigureGeneric));
 
+    /// <summary>
+    /// Registers as <see cref="IOptions{TOptions}"/> every <see cref="Type"/>
+    /// marked with <see cref="RegisterOptionAttribute"/> in the provided array of <see cref="Assembly"/>
+    /// </summary>
+    /// <param name="services">The Microsoft <see cref="IServiceCollection"/></param>
+    /// <param name="configuration">The Microsoft <see cref="IConfiguration"/></param>
+    /// <param name="assemblies">Assemblies where to look for the types to register</param>
+    /// <exception cref="ArgumentException">If no assembly has been passed as argument</exception>
+    /// <exception cref="ArgumentNullException">If <paramref name="assemblies"/> or <paramref name="configuration"/>are null</exception>
     public static void RegisterOptionsPatterns(this IServiceCollection services, IConfiguration configuration, params Assembly[] assemblies)
     {
         ArgumentNullException.ThrowIfNull(assemblies);
