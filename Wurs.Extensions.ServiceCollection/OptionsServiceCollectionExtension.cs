@@ -56,14 +56,10 @@ public static class OptionsServiceCollectionExtension
         => model.ValidateOnStart is true ? optionsBuilder.ValidateOnStart() : optionsBuilder;
 
     private static void ConfigureFromSettings<T>(RegisterOptionModel model, IServiceCollection services, IConfigurationSection configurationSection) where T : class
-    {
-        var options = services.AddOptions<T>()
-            .Bind(configurationSection);
-        if (model.UseDataAnnotations)
-            options.ValidateDataAnnotations();
-        if (model.ValidateOnStart)
-            options.ValidateOnStart();
-    }
+        => services.AddOptions<T>()
+            .Bind(configurationSection)
+            .ShouldUseDataAnnotations(model)
+            .ShouldValidateOnStart(model);
 
     private static IConfigurationSection GetConfigurationSection<T>(T type, IConfiguration configuration) where T : class
         => configuration.GetSection(type.GetType().Name);
