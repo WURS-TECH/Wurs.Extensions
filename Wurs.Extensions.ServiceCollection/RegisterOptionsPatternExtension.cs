@@ -24,7 +24,7 @@ public static class OptionsServiceCollectionExtension
     /// <param name="services">The Microsoft <see cref="IServiceCollection"/></param>
     /// <param name="configuration">The Microsoft <see cref="IConfiguration"/></param>
     /// <param name="assemblies">Assemblies where to look for the types to register</param>
-    /// <exception cref="ArgumentException">If no assembly has been passed as argument</exception>
+    /// <exception cref="ArgumentException">If no assembly has been passed as an argument</exception>
     /// <exception cref="ArgumentNullException">If <paramref name="assemblies"/> or <paramref name="configuration"/>are null</exception>
     public static void RegisterOptionsPatterns(this IServiceCollection services, IConfiguration configuration, params Assembly[] assemblies)
     {
@@ -34,24 +34,20 @@ public static class OptionsServiceCollectionExtension
         if (assemblies.Length <= 0)
             throw new ArgumentException("Need at least one assembly to register Options pattern from assemblies");
 
-        if (assemblies.Any())
-            GetTypesToRegister(assemblies).ToList().ForEach(type =>
-            {
-                var attribute = type.GetCustomAttribute<RegisterOptionAttribute>()!;
-                Configure(attribute, type, services, configuration);
-            });
+        GetTypesToRegister(assemblies).ToList().ForEach(type =>
+        {
+            var attribute = type.GetCustomAttribute<RegisterOptionAttribute>()!;
+            Configure(attribute, type, services, configuration);
+        });
     }
 
-    private static IEnumerable<Type> GetTypesToRegister(Assembly[] assemblies)
+    private static IEnumerable<Type> GetTypesToRegister(IEnumerable<Assembly> assemblies)
     {
         assemblies = ExcludeAssemblies(assemblies);
 
         foreach (var assembly in assemblies)
         {
-            var types = assembly.GetTypes()
-                    .Where(t => t.GetCustomAttribute<RegisterOptionAttribute>() is not null &&
-                    t.GetCustomAttribute<RegisterOptionAttribute>()!.RegisterOptionType
-                    .HasFlag(OptionType.Settings | OptionType.Environment));
+            var types = ExcludeTypes(assembly.GetTypes());
 
             foreach (var type in types)
                 yield return type;
@@ -77,11 +73,11 @@ public static class OptionsServiceCollectionExtension
             .ShouldValidateOnStart(attribute.ValidateOnStart);
     }
 
-    private static OptionsBuilder<T> ShouldUseDataAnnotations<T>(this OptionsBuilder<T> optionsBuilder, bool UseDataAnnotations) where T : class
-        => UseDataAnnotations is true ? optionsBuilder.ValidateDataAnnotations() : optionsBuilder;
+    private static OptionsBuilder<T> ShouldUseDataAnnotations<T>(this OptionsBuilder<T> optionsBuilder, bool useDataAnnotations) where T : class
+        => useDataAnnotations is true ? optionsBuilder.ValidateDataAnnotations() : optionsBuilder;
 
-    private static OptionsBuilder<T> ShouldValidateOnStart<T>(this OptionsBuilder<T> optionsBuilder, bool ValidateOnStart) where T : class
-        => ValidateOnStart is true ? optionsBuilder.ValidateOnStart() : optionsBuilder;
+    private static OptionsBuilder<T> ShouldValidateOnStart<T>(this OptionsBuilder<T> optionsBuilder, bool validateOnStart) where T : class
+        => validateOnStart is true ? optionsBuilder.ValidateOnStart() : optionsBuilder;
 
     private static IConfigurationSection GetConfigurationSection<T>(T type, IConfiguration configuration) where T : class
         => configuration.GetSection(type.GetType().Name);
@@ -90,9 +86,16 @@ public static class OptionsServiceCollectionExtension
         => typeof(OptionsServiceCollectionExtension)
             .GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)!;
 
-    private static Assembly[] ExcludeAssemblies(Assembly[] assemblies)
+    private static IEnumerable<Assembly> ExcludeAssemblies(IEnumerable<Assembly> assemblies)
         => assemblies.Where(a =>
-                    !a.GetName().Name!.ToLower().Contains(MICROSOFT) &&
-                    !a.GetName().Name!.ToLower().Contains(SYSTEM))
-                    .ToArray();
+        {
+            var assemblyName = a.GetName().Name!.ToLower();
+            return !assemblyName.Contains(MICROSOFT) &&
+                              !assemblyName.ToLower().Contains(SYSTEM);
+        });
+
+    private static IEnumerable<Type> ExcludeTypes(IEnumerable<Type> types)
+        => types.Where(t => t.GetCustomAttribute<RegisterOptionAttribute>() is not null &&
+                            t.GetCustomAttribute<RegisterOptionAttribute>()!.RegisterOptionType
+                            .HasFlag(OptionType.Settings | OptionType.Environment));
 }
