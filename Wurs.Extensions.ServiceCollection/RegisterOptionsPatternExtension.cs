@@ -10,12 +10,12 @@ namespace Wurs.Extensions.ServiceCollection;
 /// Registers as <see cref="IOptions{TOptions}"/> every <see cref="Type"/>
 /// marked with <see cref="RegisterOptionAttribute"/> in the provided array of <see cref="Assembly"/>
 /// </summary>
-public static class OptionsServiceCollectionExtension
+public static class RegisterOptionsPatternExtension
 {
     private const string MICROSOFT = "microsoft";
     private const string SYSTEM = "system";
     private static readonly MethodInfo _configureGenericMethod =
-        GetBaseMethod(nameof(OptionsServiceCollectionExtension.ConfigureGeneric));
+        GetBaseMethod(nameof(RegisterOptionsPatternExtension.ConfigureGeneric));
 
     /// <summary>
     /// Registers as <see cref="IOptions{TOptions}"/> every <see cref="Type"/>
@@ -83,7 +83,7 @@ public static class OptionsServiceCollectionExtension
         => configuration.GetSection(type.GetType().Name);
 
     private static MethodInfo GetBaseMethod(string methodName)
-        => typeof(OptionsServiceCollectionExtension)
+        => typeof(RegisterOptionsPatternExtension)
             .GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)!;
 
     private static IEnumerable<Assembly> ExcludeAssemblies(IEnumerable<Assembly> assemblies)
