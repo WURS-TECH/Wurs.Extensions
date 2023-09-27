@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Reflection;
 using Wurs.Extensions.ServiceCollection.Atributtes;
 using Wurs.Extensions.ServiceCollection.Enums;
+using Wurs.Extensions.ServiceCollection.Helpers;
 
 namespace Wurs.Extensions.ServiceCollection;
 /// <summary>
@@ -12,10 +13,12 @@ namespace Wurs.Extensions.ServiceCollection;
 /// </summary>
 public static class RegisterOptionsPatternExtension
 {
-    private const string MICROSOFT = "microsoft";
-    private const string SYSTEM = "system";
-    private static readonly MethodInfo _configureGenericMethod =
-        GetBaseMethod(nameof(RegisterOptionsPatternExtension.ConfigureGeneric));
+    private const string MICROSOFT_NAMESPACE = "microsoft";
+    private const string SYSTEM_NAMESPACE = "system";
+    private static readonly MethodInfo _configureOptionsMethodInfo =
+        MethodReflectionHelper.GetMethodInfo(typeof(RegisterOptionsPatternExtension),
+            nameof(RegisterOptionsPatternExtension.ConfigureOptions),
+            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
 
     /// <summary>
     /// Registers as <see cref="IOptions{TOptions}"/> every <see cref="Type"/>
@@ -32,70 +35,49 @@ public static class RegisterOptionsPatternExtension
         ArgumentNullException.ThrowIfNull(configuration);
 
         if (assemblies.Length <= 0)
-            throw new ArgumentException("Need at least one assembly to register Options pattern from assemblies");
+            throw new ArgumentException("Need at least one assembly to register OptionsPattern from assemblies");
 
-        GetTypesToRegister(assemblies).ToList().ForEach(type =>
+        var optionsPatternTypes = GetOptionsPatternTypes(assemblies);
+
+        foreach (var type in optionsPatternTypes)
         {
-            var attribute = type.GetCustomAttribute<RegisterOptionAttribute>()!;
-            Configure(attribute, type, services, configuration);
-        });
-    }
-
-    private static IEnumerable<Type> GetTypesToRegister(IEnumerable<Assembly> assemblies)
-    {
-        assemblies = ExcludeAssemblies(assemblies);
-
-        foreach (var assembly in assemblies)
-        {
-            var types = ExcludeTypes(assembly.GetTypes());
-
-            foreach (var type in types)
-                yield return type;
+            MethodReflectionHelper.InvokeGenericMethod(type, _configureOptionsMethodInfo, services, configuration,
+                type.GetCustomAttribute<RegisterOptionAttribute>()!);
         }
     }
 
-    private static void Configure(RegisterOptionAttribute attribute, Type type, IServiceCollection services, IConfiguration configuration)
-        => _configureGenericMethod.MakeGenericMethod(type)
-                     .Invoke(null, new object[] { services, configuration, attribute });
-
-    private static void ConfigureGeneric<T>(IServiceCollection services, IConfiguration configuration,
-        RegisterOptionAttribute attribute) where T : class
+    private static IEnumerable<Type> GetOptionsPatternTypes(IEnumerable<Assembly> assemblies)
     {
-        var builder = services.AddOptions<T>();
-
-        if (attribute.RegisterOptionType == OptionType.Environment)
-            builder
-            .Bind(configuration);
-        else
-            builder.Bind(GetConfigurationSection(typeof(T), configuration));
-
-        builder.ShouldUseDataAnnotations(attribute.UseDataAnnotations)
-            .ShouldValidateOnStart(attribute.ValidateOnStart);
+        return assemblies.Where(a =>
+        {
+            var assemblyName = a.GetName().Name;
+            return !string.IsNullOrWhiteSpace(assemblyName) && !(IsMicrosoftAssembly(assemblyName) && IsSystemAssembly(assemblyName));
+        }).SelectMany(assembly => assembly.GetTypes().Where(t => IsOptionsPatternType(t)));
     }
 
-    private static OptionsBuilder<T> ShouldUseDataAnnotations<T>(this OptionsBuilder<T> optionsBuilder, bool useDataAnnotations) where T : class
-        => useDataAnnotations is true ? optionsBuilder.ValidateDataAnnotations() : optionsBuilder;
+    private static void ConfigureOptions<T>(IServiceCollection services, IConfiguration configuration, RegisterOptionAttribute attribute) where T : class
+        => services.AddOptions<T>().Bind(attribute.RegisterOptionType is OptionType.Environment ?
+                configuration : GetConfigurationSection(typeof(T), configuration))
+                .ConfigureDataAnnotations(attribute.UseDataAnnotations)
+                .ConfigureValidateOnStart(attribute.ValidateOnStart);
 
-    private static OptionsBuilder<T> ShouldValidateOnStart<T>(this OptionsBuilder<T> optionsBuilder, bool validateOnStart) where T : class
-        => validateOnStart is true ? optionsBuilder.ValidateOnStart() : optionsBuilder;
+    private static OptionsBuilder<T> ConfigureDataAnnotations<T>(this OptionsBuilder<T> optionsBuilder, bool useDataAnnotations) where T : class
+        => useDataAnnotations ? optionsBuilder.ValidateDataAnnotations() : optionsBuilder;
+
+    private static OptionsBuilder<T> ConfigureValidateOnStart<T>(this OptionsBuilder<T> optionsBuilder, bool validateOnStart) where T : class
+        => validateOnStart ? optionsBuilder.ValidateOnStart() : optionsBuilder;
 
     private static IConfigurationSection GetConfigurationSection<T>(T type, IConfiguration configuration) where T : class
         => configuration.GetSection(type.GetType().Name);
 
-    private static MethodInfo GetBaseMethod(string methodName)
-        => typeof(RegisterOptionsPatternExtension)
-            .GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)!;
+    private static bool IsMicrosoftAssembly(string assemblyName)
+        => assemblyName.Contains(MICROSOFT_NAMESPACE, StringComparison.OrdinalIgnoreCase);
 
-    private static IEnumerable<Assembly> ExcludeAssemblies(IEnumerable<Assembly> assemblies)
-        => assemblies.Where(a =>
-        {
-            var assemblyName = a.GetName().Name!.ToLower();
-            return !assemblyName.Contains(MICROSOFT) &&
-                              !assemblyName.ToLower().Contains(SYSTEM);
-        });
+    private static bool IsSystemAssembly(string assemblyName)
+        => assemblyName.Contains(SYSTEM_NAMESPACE, StringComparison.OrdinalIgnoreCase);
 
-    private static IEnumerable<Type> ExcludeTypes(IEnumerable<Type> types)
-        => types.Where(t => t.GetCustomAttribute<RegisterOptionAttribute>() is not null &&
-                            t.GetCustomAttribute<RegisterOptionAttribute>()!.RegisterOptionType
-                            .HasFlag(OptionType.Settings | OptionType.Environment));
+    private static bool IsOptionsPatternType(Type type)
+        => type.GetCustomAttribute<RegisterOptionAttribute>() is not null &&
+                            type.GetCustomAttribute<RegisterOptionAttribute>()!.RegisterOptionType
+                            .HasFlag(OptionType.Settings | OptionType.Environment);
 }
