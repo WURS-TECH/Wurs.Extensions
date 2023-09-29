@@ -3,7 +3,6 @@
 /// Used to identify whether the type should be registered 
 /// from the environment or from any configuration file.
 /// </summary>
-[Flags]
 public enum OptionType
 {
     /// <summary>

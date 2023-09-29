@@ -31,6 +31,7 @@ public static class RegisterOptionsPatternExtension
     /// <exception cref="ArgumentNullException">If <paramref name="assemblies"/> or <paramref name="configuration"/>are null</exception>
     public static void RegisterOptionsPatterns(this IServiceCollection services, IConfiguration configuration, params Assembly[] assemblies)
     {
+        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(assemblies);
         ArgumentNullException.ThrowIfNull(configuration);
 
@@ -71,10 +72,10 @@ public static class RegisterOptionsPatternExtension
         => configuration.GetSection(type.GetType().Name);
 
     private static bool IsMicrosoftAssembly(string assemblyName)
-        => assemblyName.Contains(MICROSOFT_NAMESPACE, StringComparison.OrdinalIgnoreCase);
+        => assemblyName.StartsWith(MICROSOFT_NAMESPACE, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsSystemAssembly(string assemblyName)
-        => assemblyName.Contains(SYSTEM_NAMESPACE, StringComparison.OrdinalIgnoreCase);
+        => assemblyName.StartsWith(SYSTEM_NAMESPACE, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsOptionsPatternType(Type type)
         => type.GetCustomAttribute<RegisterOptionAttribute>() is not null &&
