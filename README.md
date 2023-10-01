@@ -12,7 +12,6 @@ A set of .NET extension methods to use in your projects.
 - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Basic Usage](#basic-usage)
-- [FluentValidation Integration](#fluentvalidation-integration)
 - [Acknowledgments](#acknowledgments)
 - [License](#license)
 
