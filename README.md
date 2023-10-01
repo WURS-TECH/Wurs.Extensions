@@ -81,7 +81,7 @@ using Wurs.Extensions.ServiceCollection;
 //..
 services.RegisterOptionsPatterns(configuration,Assembly.GetAssemblies());
 ```
-## Acknowledgments
+### Acknowledgments
 
 ### License
 This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/). See the LICENSE file for details.
