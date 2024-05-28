@@ -40,7 +40,7 @@ public static class RegisterOptionsPatternExtension
 
         if (assemblies.Length <= 0)
         {
-            throw new RegisterOptionException("Fatal error, contact the contributors on github", 
+            throw new RegisterOptionException("Fatal error, contact the contributors on github",
                 new ArgumentException("Need at least one assembly to register OptionsPattern from assemblies"));
         }
 
@@ -51,9 +51,8 @@ public static class RegisterOptionsPatternExtension
         }
     }
 
-    private static Type[] GetValidTypes(Assembly[] assemblies) 
-        => assemblies.SelectMany(assembly => assembly.GetTypes())?.Filter()?.ToArray() ??
-            throw new NotImplementedException();
+    private static Type[] GetValidTypes(Assembly[] assemblies)
+        => assemblies.SelectMany(assembly => assembly.GetTypes())?.Filter()?.ToArray() ?? [];
 
     private static object[] GetArguments(Type type, IServiceCollection services, IConfiguration configuration)
         => [services, configuration, type.GetCustomAttribute<RegisterOptionAttribute>()!];
