@@ -44,23 +44,23 @@ public static class RegisterOptionsPatternExtension
                 new ArgumentException("Need at least one assembly to register OptionsPattern from assemblies"));
         }
 
-        foreach (var type in GetValidTypes(assemblies))
+        foreach (var type in GetValidTypesAsDictionary(assemblies))
         {
-            _configureOptionsMethodInfo.MakeGenericMethod(type)
-                .Invoke(null, GetArguments(type, services, configuration));
+            _configureOptionsMethodInfo.MakeGenericMethod(type.Key)
+                .Invoke(null, [services, configuration, type.Value]);
         }
     }
 
-    private static Type[] GetValidTypes(Assembly[] assemblies)
-        => assemblies.SelectMany(assembly => assembly.GetTypes())?.Filter()?.ToArray() ?? [];
-
-    private static object[] GetArguments(Type type, IServiceCollection services, IConfiguration configuration)
-        => [services, configuration, type.GetCustomAttribute<RegisterOptionAttribute>()!];
+    private static Dictionary<Type, RegisterOptionAttribute> GetValidTypesAsDictionary(Assembly[] assemblies)
+        => assemblies.SelectMany(assembly => assembly.GetTypes())?
+        .Filter()?
+        .ToDictionary(type => type, type => type.GetCustomAttribute<RegisterOptionAttribute>()!) ?? [];
 
     private static void ConfigureOptions<T>(IServiceCollection services,
         IConfiguration configuration,
         RegisterOptionAttribute attribute) where T : class
-        => services.AddOptions<T>().Bind(configuration, attribute.RegisterOptionType)
-                .ConfigureDataAnnotations(attribute.UseDataAnnotations)
-                .ConfigureValidateOnStart(attribute.ValidateOnStart);
+        => services.AddOptions<T>()
+                    .Bind(configuration, attribute.RegisterOptionType)
+                    .ConfigureDataAnnotations(attribute.UseDataAnnotations)
+                    .ConfigureValidateOnStart(attribute.ValidateOnStart);
 }
