@@ -40,7 +40,7 @@ public static class RegisterOptionsPatternExtension
 
         if (assemblies.Length <= 0)
         {
-            throw new RegisterOptionException("Fatal error, contact the contributors on github",
+            throw new RegisterOptionException("Need at least one assembly to register OptionsPattern from assemblies",
                 new ArgumentException("Need at least one assembly to register OptionsPattern from assemblies"));
         }
 
