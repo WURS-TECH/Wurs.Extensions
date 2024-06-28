@@ -18,7 +18,7 @@ A set of .NET extension methods to use in your projects.
 ### Introduction
 The library has the different extension methods organized as follows:
 
-- `RegisterOptionsPatternExtension` provides an extension method to centralize the dependency injection of your options classes via custom attributes when using [OptionsPattern](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-7.0) on your .NET applications.
+- `AddMyOptions` provides an extension method to centralize the dependency injection of your options classes via custom attributes when using [OptionsPattern](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-7.0) on your .NET applications.
 
 ### Features
 
