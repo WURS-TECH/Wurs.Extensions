@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Wurs.Extensions.ServiceCollection.Enums;
 
-namespace Wurs.Extensions.ServiceCollection.Atributtes;
+namespace Wurs.Extensions.ServiceCollection.Attributes;
 /// <summary>
 /// An <see cref="Attribute"/> used to identify a <see cref="Type"/>
 /// as an <see cref="IOptions{TOptions}"/> to be registered.
@@ -11,7 +11,7 @@ namespace Wurs.Extensions.ServiceCollection.Atributtes;
 /// </remarks>
 /// <param name="registerOptionType"><see cref="OptionType"/></param>
 /// <param name="useDataAnnotations">Marks an <see cref="IOptions{TOptions}"/> to use <c>Data Annotations</c></param>
-/// <param name="validateOnStart">Marks an <see cref="IOptions{TOptions}"/>to validate <c>Data Annonations</c> on start</param>
+/// <param name="validateOnStart">Marks an <see cref="IOptions{TOptions}"/>to validate <c>Data Annotations</c> on start</param>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
 public class RegisterOptionAttribute(OptionType registerOptionType,
                                 bool useDataAnnotations = false,

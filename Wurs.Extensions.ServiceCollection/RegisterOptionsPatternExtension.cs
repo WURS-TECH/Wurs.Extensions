@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Reflection;
-using Wurs.Extensions.ServiceCollection.Atributtes;
+using Wurs.Extensions.ServiceCollection.Attributes;
 using Wurs.Extensions.ServiceCollection.Exceptions;
 using Wurs.Extensions.ServiceCollection.Extensions;
 using Wurs.Extensions.ServiceCollection.Helpers;
@@ -40,7 +40,7 @@ public static class RegisterOptionsPatternExtension
 
         if (assemblies.Length <= 0)
         {
-            throw new RegisterOptionException("Fatal error, contact the contributors on github",
+            throw new RegisterOptionException("Need at least one assembly to register OptionsPattern from assemblies",
                 new ArgumentException("Need at least one assembly to register OptionsPattern from assemblies"));
         }
 

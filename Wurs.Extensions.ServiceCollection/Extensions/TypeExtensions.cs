@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Wurs.Extensions.ServiceCollection.Atributtes;
+using Wurs.Extensions.ServiceCollection.Attributes;
 using Wurs.Extensions.ServiceCollection.Enums;
 
 namespace Wurs.Extensions.ServiceCollection.Extensions;
