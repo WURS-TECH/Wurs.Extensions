@@ -79,7 +79,7 @@ Finally use the provided extension method on Program.cs or on a custom extension
 ```c#
 using Wurs.Extensions.ServiceCollection;
 //..
-services.RegisterOptionsPatterns(configuration,Assembly.GetAssemblies());
+services.AddMyOptions(configuration,Assembly.GetAssemblies());
 ```
 ### Acknowledgments
 
