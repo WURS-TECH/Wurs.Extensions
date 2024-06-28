@@ -12,7 +12,6 @@ A set of .NET extension methods to use in your projects.
 - [Getting Started](#getting-started)
   - [Installation](#installation)
   - [Basic Usage](#basic-usage)
-- [Acknowledgments](#acknowledgments)
 - [License](#license)
 
 ### Introduction
@@ -81,7 +80,6 @@ using Wurs.Extensions.ServiceCollection;
 //..
 services.AddMyOptions(configuration,Assembly.GetAssemblies());
 ```
-### Acknowledgments
 
 ### License
 This project is licensed under the [MIT License](https://choosealicense.com/licenses/mit/). See the LICENSE file for details.
