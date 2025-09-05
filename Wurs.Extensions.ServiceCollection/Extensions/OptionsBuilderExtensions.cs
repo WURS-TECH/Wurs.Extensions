@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Wurs.Extensions.ServiceCollection.Enums;
+using Wurs.Extensions.ServiceCollection.Attributes;
+using System.Reflection;
 
 namespace Wurs.Extensions.ServiceCollection.Extensions;
 
@@ -9,13 +11,13 @@ internal static class OptionsBuilderExtensions
 {
     internal static OptionsBuilder<T> Bind<T>(this OptionsBuilder<T> builder, IConfiguration configuration, OptionType optionType) where T : class
     {
-        var section = optionType switch
-        {
-            OptionType.Environment => configuration,
-            OptionType.Settings => configuration.GetSection(typeof(T).Name),
-            _ => configuration
-        };
+        if (optionType == OptionType.Environment)
+            return builder.Bind(configuration);
 
+        var keyName = typeof(T).GetCustomAttribute<ConfigurationKeyNameAttribute>()?.Name
+            ?? typeof(T).Name;
+
+        var section = configuration.GetSection(keyName);
         return builder.Bind(section);
     }
 
