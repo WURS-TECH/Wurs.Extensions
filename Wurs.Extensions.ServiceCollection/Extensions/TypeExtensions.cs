@@ -6,8 +6,16 @@ namespace Wurs.Extensions.ServiceCollection.Extensions;
 
 internal static class TypeExtensions
 {
-    internal static IEnumerable<Type>? Filter(this IEnumerable<Type> types) => types.Where(IsValidType);
-
-    private static bool IsValidType(Type type) => type?.GetCustomAttribute<RegisterOptionAttribute>()?.RegisterOptionType
-        .HasFlag(OptionType.Settings | OptionType.Environment) ?? false;
+    internal static IEnumerable<Type> Filter(this IEnumerable<Type> types)
+    {
+        foreach (var type in types)
+        {
+            var attr = type.GetCustomAttribute<RegisterOptionAttribute>();
+            if (attr is not null &&
+                (attr.RegisterOptionType == OptionType.Settings || attr.RegisterOptionType == OptionType.Environment))
+            {
+                yield return type;
+            }
+        }
+    }
 }

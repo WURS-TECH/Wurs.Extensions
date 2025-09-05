@@ -9,14 +9,19 @@ internal static class OptionsBuilderExtensions
 {
     internal static OptionsBuilder<T> Bind<T>(this OptionsBuilder<T> builder, IConfiguration configuration, OptionType optionType) where T : class
     {
-        var section = optionType is OptionType.Environment ? configuration : configuration.GetSection(typeof(T).Name);
+        var section = optionType switch
+        {
+            OptionType.Environment => configuration,
+            OptionType.Settings => configuration.GetSection(typeof(T).Name),
+            _ => configuration
+        };
 
         return builder.Bind(section);
     }
 
     internal static OptionsBuilder<T> ConfigureDataAnnotations<T>(this OptionsBuilder<T> optionsBuilder,
-                                                             bool useDataAnnotations) where T : class
-    => useDataAnnotations ? optionsBuilder.ValidateDataAnnotations() : optionsBuilder;
+                                                                 bool useDataAnnotations) where T : class
+        => useDataAnnotations ? optionsBuilder.ValidateDataAnnotations() : optionsBuilder;
 
     internal static OptionsBuilder<T> ConfigureValidateOnStart<T>(this OptionsBuilder<T> optionsBuilder,
         bool validateOnStart) where T : class
